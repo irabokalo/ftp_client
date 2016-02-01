@@ -38,20 +38,16 @@ void MainWindow::slotError(QAbstractSocket::SocketError err)
     switch(err)
     {
     case QAbstractSocket::HostNotFoundError :
-    {
         qDebug() << "Error: The host was not found.";
         break;
-    }
     case QAbstractSocket::RemoteHostClosedError :
-    {
         qDebug() << "Error: The remote host is closed.";
         break;
-    }
     case QAbstractSocket::ConnectionRefusedError :
-    {
         qDebug() << "Error: The connection was refused.";
         break;
-    }
+    default:
+        qDebug() << "The following error occured: " << socket->errorString();
     }
 }
 
