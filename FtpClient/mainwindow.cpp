@@ -3,6 +3,9 @@
 
 #include <QTcpSocket>
 
+#include <fstream>
+#include <QFile>
+
 const int portNumber = 1488;
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -28,6 +31,7 @@ void MainWindow::doConnect()
                 this, &MainWindow::slotError);
         connect(ui->pushButton, &QPushButton::clicked, this, &MainWindow::onChangeDir);
         connect(ui->pushButton_2, &QPushButton::clicked, this, &MainWindow::onDownloadFile);
+        connect(ui->pushButton_3, &QPushButton::clicked, this, &MainWindow::onUploadFile);
     }
 
     qDebug() << "connecting...";
@@ -62,7 +66,7 @@ void MainWindow::onChangeDir()
 
     *reinterpret_cast<short*>(&buffer[0]) = 0;
 
-    buffer += "Download file plz";
+    buffer += "Change dir plz";
 
     socket->write( buffer.c_str(), buffer.size() );
 }
@@ -75,9 +79,31 @@ void MainWindow::onDownloadFile()
 
     *reinterpret_cast<short*>(&buffer[0]) = 1;
 
-    buffer += "Change dir plz";
+    buffer += "Download file plz";
 
     socket->write( buffer.c_str(), buffer.size() );
+}
+
+void MainWindow::onUploadFile()
+{
+
+    QFile readStream("data.png");
+
+    if( !readStream.open( QIODevice::ReadOnly ) )
+    {
+        qDebug() << "Can`t open file";
+        return;
+    }
+
+    qDebug() << readStream.size();
+
+    QByteArray data( 2, '0' );
+
+    *reinterpret_cast<short*>( data.data() ) = 2;
+
+    data.append( readStream.readAll() );
+
+    socket->write( data.data(), data.size() );
 }
 
 void MainWindow::slotConnected()

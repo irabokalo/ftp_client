@@ -29,6 +29,7 @@ public slots:
 private:
     void onChangeDir();
     void onDownloadFile();
+    void onUploadFile();
 
 private:
      void init();

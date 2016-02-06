@@ -71,6 +71,13 @@ QPushButton:active
       </property>
      </widget>
     </item>
+    <item row="3" column="0">
+     <widget class="QPushButton" name="pushButton_3">
+      <property name="text">
+       <string>UploadFile</string>
+      </property>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">

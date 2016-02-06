@@ -5,6 +5,7 @@
 #include <thread>
 #include <utility>
 #include <boost/asio.hpp>
+#include <fstream>
 
 using boost::asio::ip::tcp;
 
@@ -33,9 +34,20 @@ struct Executor
 		std::cout << "Dispathed download file" << std::endl;
 		std::cout << &data[0] << std::endl;
 	}
-};
 
-std::function<void(tcp::socket&)>  myFunc = Executor::DownloadFile;
+	static void UploadFile(tcp::socket &sock)
+	{
+		boost::system::error_code error;
+		std::vector<char> data(6000);
+		size_t length = sock.read_some(boost::asio::buffer(data), error);
+
+		std::cout << "Dispathed upload file" << std::endl;
+
+		std::ofstream file("myImg.png", std::ios::binary);
+
+		file.write(&data[0], length);
+	}
+};
 
 struct Dispather
 {
@@ -56,12 +68,14 @@ struct Dispather
 	enum class MessageT { DownloadFile = 0, ChangeDir, UploadFile };
 	typedef std::function<void(tcp::socket&)> Action;
 	static std::map < MessageT, Action > _operations;
+
 	tcp::socket &_socket;
 };
 
 std::map<Dispather::MessageT, Dispather::Action> Dispather::_operations { 
 	{ MessageT::ChangeDir, Executor::ChangeDir },
-	{ MessageT::DownloadFile, Executor::DownloadFile }
+	{ MessageT::DownloadFile, Executor::DownloadFile },
+	{ MessageT::UploadFile, Executor::UploadFile }
 };
 
 void session(tcp::socket sock)
