@@ -75,13 +75,35 @@ void MainWindow::onDownloadFile()
 {
     std::string buffer;
 
-    buffer.resize(2);
+    buffer.resize(6);
 
-    *reinterpret_cast<short*>(&buffer[0]) = 1;
-
-    buffer += "Download file plz";
-
+    buffer[0] = static_cast<char>(1);
+    buffer[1] = static_cast<char>(1);
+    int *pointer = reinterpret_cast<int *>(&buffer[2]);
+    *pointer = 5;
+    buffer += "D:/tee.txt";
     socket->write( buffer.c_str(), buffer.size() );
+
+    QFile saveMe ("my_file.txt");
+
+    QByteArray data;
+    socket->waitForReadyRead();
+
+    data = socket->readAll();
+    int Numb = static_cast<short>(data[0]);
+    int errorCode = static_cast<short> (data[1]);
+    int* ptr = reinterpret_cast<int *>(data.data()+2);
+    int addData = *ptr;
+     saveMe.open(QIODevice::WriteOnly);
+    while( addData> 0 )
+    {
+        socket->waitForReadyRead();
+        data = socket->readAll();
+        qDebug() << data;
+        saveMe.write(data.data()+6, 1024);
+        addData-= 1024;
+    }
+    qDebug()<< Numb<<" "<< errorCode << addData<<endl;
 }
 
 void MainWindow::onUploadFile()

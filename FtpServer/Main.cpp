@@ -29,10 +29,48 @@ struct Executor
 		boost::system::error_code error;
 		std::vector<char> data(max_length);
 		size_t length = sock.read_some(boost::asio::buffer(data), error);
+
 		data[length] = '\0';
 
-		std::cout << "Dispathed download file" << std::endl;
-		std::cout << &data[0] << std::endl;
+		short errorCode = static_cast<short>(data[0]);
+
+		int* pointer = reinterpret_cast<int*>(&data[1]);
+		int addData = *pointer;
+
+		std::string filePath(data.begin() + 5, data.begin() + length);
+		int size = 0;
+		path Path(filePath);
+		if (exists(Path))    // does path p actually exist?
+		{
+			if (is_regular_file(Path))        // is path p a regular file?
+			{
+				size = file_size(Path); std::cout << file_size(Path) << '\n'; std::cout << Path << std::endl;
+			}
+			else if (is_directory(Path))      // is path p a directory?
+				std::cout << Path << " is a directory\n";
+			else
+				std::cout << Path << " exists, but is not a regular file or directory\n";
+		}
+		else
+			std::cout << Path << " does not exist\n";
+		ifstream file(filePath, std::ios::binary);
+		std::vector<char> array1;
+		array1.resize(1030);
+		array1[0] = static_cast<char>(3);
+		array1[1] = static_cast<char>(0);
+		int* newArrPointer = reinterpret_cast<int*> (&array1[2]);
+		*newArrPointer = size;
+
+		int count = 0;
+
+		while (size > 0)
+		{
+			file.read(&array1[6], 1024);
+			size_t l = sock.write_some(boost::asio::buffer(array1, array1.size()));
+			size -= max_length;
+		}
+		//	std::cout << "Dispathed download file" << std::endl;
+		//	std::cout << errorCode << " " << addData << std::endl;
 	}
 
 	static void UploadFile(tcp::socket &sock)
